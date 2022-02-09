@@ -3,23 +3,29 @@ const jwt = require("jsonwebtoken");
 
 const authMiddleware = async (req, res, next) => {
   const authorizationHeader = req.headers["authorization"];
-  const token = authorizationHeader && authorizationHeader.split(" ")[1];
+  const accessToken = authorizationHeader && authorizationHeader.split(" ")[1];
 
-  jwt.verify(token, process.env.JWT_ACCESS_KEY, async (err, decoded) => {
-    if (err) return res.status(401).json({ message: "Please authenticate" });
+  if (!accessToken)
+    return res.status(401).json({ message: "Please authenticate" });
 
-    const user = await User.findOne({
-      _id: decoded._id,
-      "tokens.token": token,
-    });
+  jwt.verify(
+    accessToken,
+    process.env.JWT_ACCESS_SECRET,
+    async (err, decoded) => {
+      if (err) return res.status(403).json({ message: "Invalid token" });
 
-    if (!user) return res.status(401).json({ message: "Please authenticate" });
+      const user = await User.findOne({
+        _id: decoded._id,
+      });
 
-    req.user = user;
-    req.token = token;
+      if (!user)
+        return res.status(401).json({ message: "Please authenticate" });
 
-    next();
-  });
+      req.user = user;
+
+      next();
+    }
+  );
 };
 
 module.exports = authMiddleware;
