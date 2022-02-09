@@ -7,16 +7,19 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, "Please provide a name"],
-      index: true,
     },
     email: {
       type: String,
       required: [true, "Email address is required"],
       trim: true,
       lowercase: true,
-      unique: true,
-      validate: [validator.isEmail, "Please provide a valid email"],
-      index: true,
+      unique: [true, "Please provide a valid email"],
+      validate: {
+        validator: function (value) {
+          return validator.isEmail(value);
+        },
+        message: "Please provide a valid email",
+      },
     },
     password: {
       type: String,
@@ -29,6 +32,11 @@ const userSchema = new mongoose.Schema(
         },
         message: () => `password is not valid`,
       },
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
     },
     favoriteProducts: [
       {
@@ -45,14 +53,7 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
     },
-    tokens: [
-      {
-        token: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
+    refreshToken: String,
   },
   {
     toJSON: { virtuals: true },
@@ -66,12 +67,30 @@ userSchema.virtual("orders", {
   foreignField: "orderOwner",
 });
 
-userSchema.methods.generateAuthToken = async function () {
+userSchema.methods.generateAccessToken = function () {
   const user = this;
-  const token = jwt.sign({ _id: user._id }, process.env.JWT_ACCESS_KEY);
-  user.tokens.push({ token });
+  const accessToken = jwt.sign(
+    { _id: user._id },
+    process.env.JWT_ACCESS_SECRET,
+    {
+      expiresIn: "30s",
+    }
+  );
+  return accessToken;
+};
+
+userSchema.methods.generateRefreshToken = async function () {
+  const user = this;
+  const refreshToken = jwt.sign(
+    { _id: user._id },
+    process.env.JWT_REFRESH_SECRET,
+    {
+      expiresIn: "1d",
+    }
+  );
+  user.refreshToken = refreshToken;
   await user.save();
-  return token;
+  return refreshToken;
 };
 
 const User = mongoose.model("user", userSchema);
