@@ -4,15 +4,15 @@ const productSchema = new mongoose.Schema(
   {
     title: {
       type: String,
-      required: true,
+      required: [true, "Please provide product title"],
     },
     description: {
       type: String,
-      required: true,
+      required: [true, "Please provide product description"],
     },
     price: {
       type: Number,
-      required: true,
+      required: [true, "Please provide product price"],
     },
     sizes: {
       type: [String],
