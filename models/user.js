@@ -73,7 +73,7 @@ userSchema.methods.generateAccessToken = function () {
     { _id: user._id },
     process.env.JWT_ACCESS_SECRET,
     {
-      expiresIn: "30s",
+      expiresIn: process.env.ACCESS_TOKEN_EXP,
     }
   );
   return accessToken;
@@ -85,7 +85,7 @@ userSchema.methods.generateRefreshToken = async function () {
     { _id: user._id },
     process.env.JWT_REFRESH_SECRET,
     {
-      expiresIn: "1d",
+      expiresIn: process.env.REFRESH_TOKEN_EXP,
     }
   );
   user.refreshToken = refreshToken;
