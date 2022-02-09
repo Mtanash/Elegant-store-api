@@ -1,60 +1,124 @@
 const bcrypt = require("bcrypt");
 const User = require("../models/user");
 const mongoose = require("mongoose");
+const Order = require("../models/order");
+
+const cleanUserObj = (user) => {
+  const userObj = user.toObject();
+  delete userObj?.password;
+  delete userObj?.refreshToken;
+  delete userObj?.id;
+  return userObj;
+};
 
 const createUser = async (req, res) => {
   const emailExist = await User.findOne({ email: req.body.email });
   if (emailExist) return res.status(400).json({ message: "Invalid email." });
-  const hashedPassword = await bcrypt.hash(req.body.password, 12);
-  const newUser = new User({ ...req.body, password: hashedPassword });
-  const token = await newUser.generateAuthToken();
   try {
+    const hashedPassword = await bcrypt.hash(req.body.password, 10);
+    const newUser = new User({ ...req.body, password: hashedPassword });
+    const accessToken = newUser.generateAccessToken();
+    const refreshToken = await newUser.generateRefreshToken();
     await newUser.save();
-  } catch (e) {
-    return res.status(400).json({ error: e.name, message: e.message });
-  }
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
 
-  res.json({ user: newUser, token });
+    const userObj = cleanUserObj(newUser);
+
+    res.status(201).json({ user: userObj, accessToken });
+  } catch (e) {
+    return res.status(500).json({ message: e.message });
+  }
 };
 
 const getCurrentUser = async (req, res) => {
   let populateOrders = req.query.popOrders;
-  if (!!populateOrders) await req.user.populate("orders");
+  try {
+    if (!!populateOrders) await req.user.populate("orders");
 
-  // await user.populate("favoriteProducts");
+    // await user.populate("favoriteProducts");
 
-  res.json(req.user);
+    const userObj = cleanUserObj(req.user);
+
+    res.json({ user: userObj });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getFavoriteProducts = async (req, res) => {
+  try {
+    await req.user.populate("favoriteProducts");
+    res.json(req.user.favoriteProducts);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getOrders = async (req, res) => {
+  try {
+    await req.user.populate("orders");
+    res.json(req.user.orders);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 const loginUser = async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
+  try {
+    const user = await User.findOne({ email: req.body.email });
 
-  if (!user)
-    return res.status(404).json({ message: "Wrong user credentials!" });
+    if (!user)
+      return res.status(404).json({ message: "Wrong user credentials!" });
 
-  const isMatch = await bcrypt.compare(req.body.password, user.password);
+    const isMatch = await bcrypt.compare(req.body.password, user.password);
 
-  if (!isMatch)
-    return res.status(404).json({ message: "Wrong user credentials!" });
+    if (!isMatch)
+      return res.status(404).json({ message: "Wrong user credentials!" });
 
-  const token = await user.generateAuthToken();
-  res.json({ user, token });
+    const accessToken = user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
+    const userObj = cleanUserObj(user);
+
+    res.json({ user: userObj, accessToken });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 const logoutUser = async (req, res) => {
-  req.user.tokens = req.user.tokens.filter(
-    (token) => token.token !== req.token
-  );
-
-  await req.user.save();
-  res.send();
+  const cookies = req.cookies;
+  if (!cookies?.jwt) return res.sendStatus(204);
+  try {
+    req.user.refreshToken = "";
+    await req.user.save();
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
+    res.send();
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 const deleteUser = async (req, res) => {
-  const deletedUser = await User.findByIdAndDelete(req.user._id);
-  if (!deletedUser) return res.status(404).json({ message: "No user found" });
+  try {
+    const deletedUser = await User.findByIdAndDelete(req.user._id);
+    if (!deletedUser) return res.status(404).json({ message: "No user found" });
 
-  res.send();
+    res.send();
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 const addToFavorite = async (req, res) => {
@@ -111,8 +175,12 @@ const addToBought = async (req, res) => {
 
 const addAvatar = async (req, res) => {
   req.user.avatar = req.body.avatar;
-  await req.user.save();
-  res.send();
+  try {
+    await req.user.save();
+    res.send();
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 module.exports = {
@@ -125,4 +193,6 @@ module.exports = {
   addToBought,
   removeFromFavorite,
   addAvatar,
+  getFavoriteProducts,
+  getOrders,
 };
