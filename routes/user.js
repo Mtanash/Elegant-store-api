@@ -10,11 +10,20 @@ const {
   addToBought,
   removeFromFavorite,
   addAvatar,
+  getFavoriteProducts,
+  getOrders,
 } = require("../controllers/user");
+const getRefreshToken = require("../controllers/refreshToken");
 
 const userRouter = express.Router();
 
 userRouter.get("/me", authMiddleware, getCurrentUser);
+
+userRouter.get("/refresh", getRefreshToken);
+
+userRouter.get("/me/favoriteProducts", authMiddleware, getFavoriteProducts);
+
+userRouter.get("/me/orders", authMiddleware, getOrders);
 
 userRouter.post("/", createUser);
 
