@@ -2,21 +2,20 @@ const Product = require("../models/product");
 const mongoose = require("mongoose");
 
 const getAllProducts = async (req, res) => {
-  const products = await Product.find({});
-  if (!products) return res.status(404).json({ message: "Error, not found" });
-  res.json(products);
+  try {
+    const products = await Product.find({});
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 };
 
 const createProduct = async (req, res) => {
   try {
     const newProductData = req.body;
     const createdProduct = new Product(newProductData);
-
-    if (!createdProduct)
-      return res.status(400).json({ message: "Failed to create product!" });
-
     await createdProduct.save();
-    res.json(createdProduct);
+    res.status(201).json(createdProduct);
   } catch (err) {
     res.status(500).json({ message: error.message });
   }
