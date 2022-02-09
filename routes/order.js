@@ -1,5 +1,5 @@
 const express = require("express");
-const Order = require("../models/order");
+const authMiddleware = require("../middlewares/authMiddleware");
 
 const {
   getAllOrders,
@@ -14,7 +14,7 @@ orderRouter.get("/", getAllOrders);
 
 orderRouter.get("/:id", getOrder);
 
-orderRouter.post("/", createOrder);
+orderRouter.post("/", authMiddleware, createOrder);
 
 orderRouter.delete("/:id", deleteOrder);
 
