@@ -97,6 +97,33 @@ const loginUser = async (req, res) => {
   }
 };
 
+const googleAuth = async (req, res) => {
+  const { name, email, password, imageUrl } = req.body;
+
+  try {
+    let user = await User.findOne({ email });
+    console.log(user);
+
+    if (!user) {
+      hashedPassword = await bcrypt.hash(password, 10);
+      user = await User.create({ name, email, password, imageUrl });
+    }
+
+    const accessToken = user.generateAccessToken();
+    const refreshToken = await user.generateRefreshToken();
+    res.cookie("jwt", refreshToken, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: true,
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    const userObj = cleanUserObj(user);
+    res.json({ user: userObj, accessToken });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 const logoutUser = async (req, res) => {
   const cookies = req.cookies;
   if (!cookies?.jwt) return res.sendStatus(204);
@@ -195,4 +222,5 @@ module.exports = {
   addAvatar,
   getFavoriteProducts,
   getOrders,
+  googleAuth,
 };

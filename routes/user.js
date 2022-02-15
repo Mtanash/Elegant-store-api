@@ -12,6 +12,7 @@ const {
   addAvatar,
   getFavoriteProducts,
   getOrders,
+  googleAuth,
 } = require("../controllers/user");
 const getRefreshToken = require("../controllers/refreshToken");
 
@@ -30,6 +31,8 @@ userRouter.post("/", createUser);
 userRouter.post("/login", loginUser);
 
 userRouter.post("/logout", authMiddleware, logoutUser);
+
+userRouter.post("/googleAuth", googleAuth);
 
 userRouter.post("/addToFavorite", authMiddleware, addToFavorite);
 
