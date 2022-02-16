@@ -10,6 +10,28 @@ const getAllProducts = async (req, res) => {
   }
 };
 
+const getProductsBySearch = async (req, res) => {
+  const { searchQuery } = req.query;
+  try {
+    const searchQ = new RegExp(
+      `\W*(${searchQuery?.trim()?.toLowerCase()})\W*`,
+      "ig"
+    );
+    const products = await Product.find({
+      $or: [
+        { title: { $regex: searchQ } },
+        { description: { $regex: searchQ } },
+      ],
+    });
+    if (products.length === 0)
+      return res.status(404).json({ message: "No match found" });
+
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 const createProduct = async (req, res) => {
   try {
     const newProductData = req.body;
@@ -39,4 +61,9 @@ const deleteProduct = async (req, res) => {
   }
 };
 
-module.exports = { getAllProducts, createProduct, deleteProduct };
+module.exports = {
+  getAllProducts,
+  createProduct,
+  deleteProduct,
+  getProductsBySearch,
+};
