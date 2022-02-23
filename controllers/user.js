@@ -102,7 +102,6 @@ const googleAuth = async (req, res) => {
 
   try {
     let user = await User.findOne({ email });
-    console.log(user);
 
     if (!user) {
       hashedPassword = await bcrypt.hash(password, 10);
