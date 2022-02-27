@@ -10,17 +10,17 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Please provide product price"],
     },
-    sizes: {
-      type: [String],
+    featured: {
+      type: Boolean,
+      default: false,
     },
     imageUrl: {
       type: String,
-      default: "https://via.placeholder.com/200",
+      required: [true, "Please provide product image"],
     },
     rating: {
       type: Number,
-      min: 1,
-      max: 5,
+      default: 0,
     },
   },
   { timestamps: true }
