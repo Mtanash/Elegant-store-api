@@ -2,18 +2,58 @@ const Product = require("../models/product");
 const mongoose = require("mongoose");
 
 const getAllProducts = async (req, res) => {
-  let { page } = req.query;
-  if (!parseInt(page)) page = 1;
+  const { featured, search, sort, fields } = req.query;
+  let queryObject = {};
+
+  // query
+  if (featured) {
+    queryObject.featured = featured === "true" ? true : false;
+  }
+
+  if (search) {
+    const searchQ = new RegExp(
+      `\W*(${search?.trim()?.toLowerCase()})\W*`,
+      "ig"
+    );
+    queryObject.description = { $regex: searchQ };
+  }
+
+  let result = Product.find(queryObject);
+
+  // sort
+  if (sort) {
+    const sortList = sort.split(",").join(" ");
+    console.log(sortList);
+    result.sort(sortList);
+  }
+
+  // select fields
+
+  if (fields) {
+    const fieldsList = fields.split(",").join(" ");
+    result.select(fieldsList);
+  }
+
+  // pagination
+  const page = Number(req.query.page) || 1;
   const limit = 10;
-  const skip = (parseInt(page) - 1) * limit;
-  const documentsCount = await Product.countDocuments({});
-  const totalPages = Math.ceil(documentsCount / limit);
-  if (page > totalPages) page = totalPages;
+  const skip = (page - 1) * limit;
+  const totalPages = Math.ceil(
+    (await Product.countDocuments(queryObject)) / limit
+  );
+
+  result.skip(skip).limit(limit);
+
   try {
-    const products = await Product.find({}).skip(skip).limit(limit);
-    res.json({ products, totalPages });
+    const products = await result;
+    res.json({
+      products,
+      totalPages,
+      itemsCount: products.length,
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
+    console.log(err);
   }
 };
 
@@ -27,23 +67,6 @@ const getProductById = async (req, res) => {
     if (!product) return res.status(404).json({ message: "No product found!" });
 
     res.json(product);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-const getProductsBySearch = async (req, res) => {
-  const { searchQuery } = req.query;
-  try {
-    const searchQ = new RegExp(
-      `\W*(${searchQuery?.trim()?.toLowerCase()})\W*`,
-      "ig"
-    );
-    const products = await Product.find({ description: { $regex: searchQ } });
-    if (products.length === 0)
-      return res.status(404).json({ message: "No match found" });
-
-    res.json(products);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -81,6 +104,5 @@ module.exports = {
   getAllProducts,
   createProduct,
   deleteProduct,
-  getProductsBySearch,
   getProductById,
 };
