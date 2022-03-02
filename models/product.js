@@ -16,7 +16,6 @@ const productSchema = new mongoose.Schema(
     },
     imageUrl: {
       type: String,
-      required: [true, "Please provide product image"],
     },
     rating: {
       type: Number,

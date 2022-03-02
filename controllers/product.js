@@ -1,5 +1,6 @@
 const Product = require("../models/product");
 const mongoose = require("mongoose");
+const generateUploadUrl = require("../s3");
 
 const getAllProducts = async (req, res) => {
   const { featured, search, sort, fields } = req.query;
@@ -36,7 +37,7 @@ const getAllProducts = async (req, res) => {
 
   // pagination
   const page = Number(req.query.page) || 1;
-  const limit = 10;
+  const limit = Number(req.query.limit) || 10;
   const skip = (page - 1) * limit;
   const totalPages = Math.ceil(
     (await Product.countDocuments(queryObject)) / limit
@@ -78,7 +79,7 @@ const createProduct = async (req, res) => {
     const createdProduct = await Product.create(newProductData);
     res.status(201).json(createdProduct);
   } catch (err) {
-    res.status(500).json({ message: error.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -95,8 +96,30 @@ const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product does not exist!" });
 
     res.json(deletedProduct);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getImageUploadUrl = async (req, res) => {
+  const imageName = req.params.productId;
+  try {
+    const url = await generateUploadUrl(imageName);
+    res.json({ url });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const addProductImage = async (req, res) => {
+  const { productId, imageUrl } = req.body;
+  try {
+    const product = await Product.findById(productId);
+    product.imageUrl = imageUrl;
+    await product.save();
+    res.sendStatus(200);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -105,4 +128,6 @@ module.exports = {
   createProduct,
   deleteProduct,
   getProductById,
+  getImageUploadUrl,
+  addProductImage,
 };
