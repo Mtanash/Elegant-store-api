@@ -1,4 +1,6 @@
-const Product = require("../models/product");
+const Product = require("../models/Product");
+const Rate = require("../models/Rate");
+const Review = require("../models/Review");
 const mongoose = require("mongoose");
 const generateUploadUrl = require("../s3");
 
@@ -123,6 +125,78 @@ const addProductImage = async (req, res) => {
   }
 };
 
+const addReview = async (req, res) => {
+  const { text, rate, productId } = req.body;
+  const user = req.user;
+
+  try {
+    const createdRate = await Rate.create({
+      value: rate,
+      owner: user._id,
+      product: productId,
+    });
+    await Review.create({
+      text,
+      owner: user._id,
+      rate: createdRate._id,
+      product: productId,
+    });
+
+    res.sendStatus(201);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getProductReviews = async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    const productReviews = await Review.find({ product: productId })
+      .populate({ path: "rate", select: "value owner" })
+      .populate({ path: "owner", select: "name avatar" });
+    res.json(productReviews);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const getProductRates = async (req, res) => {
+  const productId = req.params.id;
+
+  try {
+    const productRates = await Rate.find({ product: productId }).select(
+      "owner value"
+    );
+    const totalRates = productRates.length;
+    let totalRatesValue = 0;
+    for (let i of productRates) {
+      totalRatesValue += i.value;
+    }
+    res.json({ productRates, totalRates, totalRatesValue });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
+const checkUserReviewedProduct = async (req, res) => {
+  const user = req.user;
+  const productId = req.params.id;
+  try {
+    const review = await Review.findOne({
+      product: productId,
+      owner: {
+        _id: user._id,
+      },
+    })
+      .populate({ path: "rate", select: "value owner" })
+      .populate({ path: "owner", select: "name avatar" });
+    res.json(review);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+
 module.exports = {
   getAllProducts,
   createProduct,
@@ -130,4 +204,8 @@ module.exports = {
   getProductById,
   getImageUploadUrl,
   addProductImage,
+  addReview,
+  getProductReviews,
+  getProductRates,
+  checkUserReviewedProduct,
 };
