@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
-const User = require("../models/user");
+const User = require("../models/User");
 const mongoose = require("mongoose");
-const Order = require("../models/order");
+const Order = require("../models/Order");
 
 const cleanUserObj = (user) => {
   const userObj = user.toObject();
@@ -32,21 +32,6 @@ const createUser = async (req, res) => {
     res.status(201).json({ user: userObj, accessToken });
   } catch (e) {
     return res.status(500).json({ message: e.message });
-  }
-};
-
-const getCurrentUser = async (req, res) => {
-  let populateOrders = req.query.popOrders;
-  try {
-    if (!!populateOrders) await req.user.populate("orders");
-
-    // await user.populate("favoriteProducts");
-
-    const userObj = cleanUserObj(req.user);
-
-    res.json({ user: userObj });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
   }
 };
 
@@ -105,7 +90,7 @@ const googleAuth = async (req, res) => {
 
     if (!user) {
       hashedPassword = await bcrypt.hash(password, 10);
-      user = await User.create({ name, email, password, imageUrl });
+      user = await User.create({ name, email, password, avatar: imageUrl });
     }
 
     const accessToken = user.generateAccessToken();
@@ -211,7 +196,6 @@ const addAvatar = async (req, res) => {
 
 module.exports = {
   createUser,
-  getCurrentUser,
   loginUser,
   logoutUser,
   deleteUser,

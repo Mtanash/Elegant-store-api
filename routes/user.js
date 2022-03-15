@@ -2,7 +2,6 @@ const express = require("express");
 const authMiddleware = require("../middlewares/authMiddleware");
 const {
   createUser,
-  getCurrentUser,
   loginUser,
   logoutUser,
   deleteUser,
@@ -17,8 +16,6 @@ const {
 const getRefreshToken = require("../controllers/refreshToken");
 
 const userRouter = express.Router();
-
-userRouter.get("/me", authMiddleware, getCurrentUser);
 
 userRouter.get("/refresh", getRefreshToken);
 
