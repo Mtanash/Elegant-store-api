@@ -17,9 +17,10 @@ const productSchema = new mongoose.Schema(
     imageUrl: {
       type: String,
     },
-    rating: {
+    stock: {
       type: Number,
-      default: 0,
+      min: 00,
+      required: true,
     },
   },
   { timestamps: true }
