@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "env-cmd -f ./.env.test jest --watchAll --verbose --maxWorkers=25%"
+    "test": "env-cmd -f ./.env.test jest --watchAll --verbose --maxWorkers=25% --detectOpenHandles"
   },
   "jest": {
     "testEnvironment": "node"

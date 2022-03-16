@@ -12,6 +12,7 @@ const productOneData = {
   featured: false,
   imageUrl: "",
   rating: 0,
+  stock: 3,
 };
 
 const userOneId = new mongoose.Types.ObjectId();
