@@ -44,10 +44,13 @@ const getFavoriteProducts = async (req, res) => {
   }
 };
 
-const getOrders = async (req, res) => {
+const getUserOrders = async (req, res) => {
   try {
-    await req.user.populate("orders");
-    res.json(req.user.orders);
+    const orders = await Order.find({ orderOwner: req.user._id }).populate({
+      path: "orderProducts",
+      select: "_id description price",
+    });
+    res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -204,6 +207,6 @@ module.exports = {
   removeFromFavorite,
   addAvatar,
   getFavoriteProducts,
-  getOrders,
+  getUserOrders,
   googleAuth,
 };
