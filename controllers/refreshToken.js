@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const User = require("../models/user");
+const User = require("../models/User");
 
 const getRefreshToken = async (req, res) => {
   const cookies = req.cookies;
@@ -10,7 +10,7 @@ const getRefreshToken = async (req, res) => {
     refreshToken,
     process.env.JWT_REFRESH_SECRET,
     async (err, decoded) => {
-      if (err) return res.sendStatus(403);
+      if (err) return res.sendStatus(401);
       const user = await User.findOne({ _id: decoded._id, refreshToken });
       if (!user) return res.sendStatus(403);
       const accessToken = user.generateAccessToken();
