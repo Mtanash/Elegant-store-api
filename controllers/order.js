@@ -1,4 +1,4 @@
-const Order = require("../models/order");
+const Order = require("../models/Order");
 
 const getAllOrders = async (req, res) => {
   try {
@@ -21,13 +21,18 @@ const getOrder = async (req, res) => {
 
 const createOrder = async (req, res) => {
   try {
+    const orderProducts = req.body.orderProducts;
     const newOrder = new Order({ ...req.body, orderOwner: req.user._id });
-    if (!newOrder)
-      return res.status(400).json({ message: "Something went wrong" });
+
     await newOrder.save();
+    orderProducts.forEach((product) => {
+      if (req.user.boughtProducts.includes(product._id)) return;
+      req.user.boughtProducts.push(product._id);
+    });
+    await req.user.save();
     res.json(newOrder);
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
@@ -42,4 +47,9 @@ const deleteOrder = async (req, res) => {
   }
 };
 
-module.exports = { getAllOrders, getOrder, createOrder, deleteOrder };
+module.exports = {
+  getAllOrders,
+  getOrder,
+  createOrder,
+  deleteOrder,
+};
