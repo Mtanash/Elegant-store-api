@@ -10,7 +10,7 @@ const {
   removeFromFavorite,
   addAvatar,
   getFavoriteProducts,
-  getOrders,
+  getUserOrders,
   googleAuth,
 } = require("../controllers/user");
 const getRefreshToken = require("../controllers/refreshToken");
@@ -21,7 +21,7 @@ userRouter.get("/refresh", getRefreshToken);
 
 userRouter.get("/me/favoriteProducts", authMiddleware, getFavoriteProducts);
 
-userRouter.get("/me/orders", authMiddleware, getOrders);
+userRouter.get("/me/orders", authMiddleware, getUserOrders);
 
 userRouter.post("/", createUser);
 
