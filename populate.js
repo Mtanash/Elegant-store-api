@@ -1,6 +1,6 @@
 require("dotenv").config();
 var colors = require("colors");
-const Product = require("./models/product");
+const Product = require("./models/Product");
 const connectDB = require("./db/connect");
 
 const productsJson = require("./products.json");
