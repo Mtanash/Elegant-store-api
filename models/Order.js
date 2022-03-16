@@ -9,15 +9,21 @@ const orderSchema = new mongoose.Schema(
     },
     orderProducts: [
       {
-        type: mongoose.SchemaTypes.ObjectId,
-        ref: "product",
-        required: true,
+        product: {
+          type: mongoose.SchemaTypes.ObjectId,
+          ref: "product",
+          required: true,
+        },
+        quantity: {
+          type: Number,
+          min: 1,
+        },
       },
     ],
     orderTotalPrice: Number,
     orderStatus: {
       type: String,
-      enum: ["confirmed", "shipped", "arrived"],
+      enum: ["confirmed", "shipped", "delivered"],
       default: "confirmed",
     },
     orderInfo: {
