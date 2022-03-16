@@ -46,10 +46,12 @@ const getFavoriteProducts = async (req, res) => {
 
 const getUserOrders = async (req, res) => {
   try {
-    const orders = await Order.find({ orderOwner: req.user._id }).populate({
-      path: "orderProducts",
-      select: "_id description price",
-    });
+    const orders = await Order.find({ orderOwner: req.user._id })
+      .populate({
+        path: "orderProducts",
+        select: "_id description price",
+      })
+      .sort("-createdAt");
     res.json(orders);
   } catch (err) {
     res.status(500).json({ message: err.message });
