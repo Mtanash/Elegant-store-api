@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const User = require("../models/User");
 const mongoose = require("mongoose");
 const Order = require("../models/Order");
+const Product = require("../models/Product");
 
 const cleanUserObj = (user) => {
   const userObj = user.toObject();
@@ -131,6 +132,9 @@ const deleteUser = async (req, res) => {
     const deletedUser = await User.findByIdAndDelete(req.user._id);
     if (!deletedUser) return res.status(404).json({ message: "No user found" });
 
+    // delete user orders
+    await Order.deleteMany({ orderOwner: req.user._id });
+
     res.send();
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -141,6 +145,11 @@ const addToFavorite = async (req, res) => {
   const { _id } = req.body;
   if (!mongoose.Types.ObjectId.isValid(_id))
     return res.status(404).json({ message: "Invalid id" });
+
+  // check if there is a product with the given id
+  const product = await Product.findById(_id);
+  if (!product)
+    return res.status(404).json({ message: "No product matches the id" });
 
   const productAlreadyExist = req.user.favoriteProducts.includes(_id);
   if (productAlreadyExist)
@@ -160,28 +169,21 @@ const removeFromFavorite = async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(_id))
     return res.status(404).json({ message: "Invalid id" });
 
+  // check if there is a product with the given id
+  const product = await Product.findById(_id);
+  if (!product)
+    return res.status(404).json({ message: "No product matches the id" });
+
+  const productExist = req.user.favoriteProducts.includes(_id);
+  if (!productExist)
+    return res
+      .status(400)
+      .json({ message: "Product is not in user favorite products" });
+
   try {
     req.user.favoriteProducts = req.user.favoriteProducts.filter(
       (product) => product.toString() !== _id
     );
-    await req.user.save();
-    res.send();
-  } catch (e) {
-    res.status(500).json({ message: e.message });
-  }
-};
-
-const addToBought = async (req, res) => {
-  const { _id } = req.body;
-  if (!mongoose.Types.ObjectId.isValid(_id))
-    return res.status(404).json({ message: "Invalid id" });
-
-  const productAlreadyExist = req.user.boughtProducts.includes(_id);
-  if (productAlreadyExist)
-    return res.status(400).json({ message: "Id already exist" });
-
-  try {
-    req.user.boughtProducts.push(req.body);
     await req.user.save();
     res.send();
   } catch (e) {
@@ -205,7 +207,6 @@ module.exports = {
   logoutUser,
   deleteUser,
   addToFavorite,
-  addToBought,
   removeFromFavorite,
   addAvatar,
   getFavoriteProducts,
