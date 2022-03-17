@@ -6,7 +6,6 @@ const {
   logoutUser,
   deleteUser,
   addToFavorite,
-  addToBought,
   removeFromFavorite,
   addAvatar,
   getFavoriteProducts,
@@ -34,8 +33,6 @@ userRouter.post("/googleAuth", googleAuth);
 userRouter.post("/addToFavorite", authMiddleware, addToFavorite);
 
 userRouter.post("/removeFromFavorite", authMiddleware, removeFromFavorite);
-
-userRouter.post("/addToBought", authMiddleware, addToBought);
 
 userRouter.post("/me/avatar", authMiddleware, addAvatar);
 
