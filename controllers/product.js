@@ -26,7 +26,6 @@ const getAllProducts = async (req, res) => {
   // sort
   if (sort) {
     const sortList = sort.split(",").join(" ");
-    console.log(sortList);
     result.sort(sortList);
   }
 
@@ -56,7 +55,6 @@ const getAllProducts = async (req, res) => {
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
-    console.log(err);
   }
 };
 

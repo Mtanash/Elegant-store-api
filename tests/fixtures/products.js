@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 const productOneId = new mongoose.Types.ObjectId();
 const productOneData = {
   _id: productOneId,
-  description: "this is a test product one description",
+  description: "a test product one description",
   price: 150,
-  featured: false,
+  featured: true,
   imageUrl: "",
   stock: 3,
 };
