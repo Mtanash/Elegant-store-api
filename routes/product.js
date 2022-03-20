@@ -1,5 +1,6 @@
 const express = require("express");
 const authMiddleware = require("../middlewares/authMiddleware");
+const adminMiddleware = require("../middlewares/adminMiddleware");
 
 const {
   getAllProducts,
@@ -28,13 +29,18 @@ productsRouter.get("/reviews/:id", getProductReviews);
 
 productsRouter.get("/rates/:id", getProductRates);
 
-productsRouter.get("/imageUploadUrl/:productId", getImageUploadUrl);
+productsRouter.get(
+  "/imageUploadUrl/:productId",
+  authMiddleware,
+  adminMiddleware,
+  getImageUploadUrl
+);
 
 productsRouter.get("/:id", getProductById);
 
-productsRouter.post("/", createProduct);
+productsRouter.post("/", authMiddleware, adminMiddleware, createProduct);
 
-productsRouter.post("/image", addProductImage);
+productsRouter.post("/image", authMiddleware, adminMiddleware, addProductImage);
 
 productsRouter.post("/reviews", authMiddleware, addReview);
 
