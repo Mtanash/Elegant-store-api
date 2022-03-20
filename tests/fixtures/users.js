@@ -16,4 +16,26 @@ const userOneData = {
   avatar: "",
 };
 
-module.exports = { userOneData, userOnePassword, userOneId };
+const adminUserId = new mongoose.Types.ObjectId();
+const adminUserPassword = "adminSuperPass";
+const adminUserData = {
+  _id: adminUserId,
+  name: "Admin",
+  email: "admin@email.com",
+  role: "admin",
+  favoriteProducts: [],
+  boughtProducts: [],
+  refreshToken: jwt.sign({ _id: adminUserId }, process.env.JWT_REFRESH_SECRET, {
+    expiresIn: process.env.REFRESH_TOKEN_EXP,
+  }),
+  avatar: "",
+};
+
+module.exports = {
+  userOneData,
+  userOnePassword,
+  userOneId,
+  adminUserData,
+  adminUserId,
+  adminUserPassword,
+};

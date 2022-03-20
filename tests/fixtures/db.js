@@ -7,11 +7,14 @@ const {
   productOneData,
   productOneId,
   productTwoData,
-  productTwoId,
   productThreeData,
-  productThreeId,
 } = require("./products");
-const { userOneData, userOnePassword, userOneId } = require("./users");
+const {
+  userOneData,
+  userOnePassword,
+  adminUserData,
+  adminUserPassword,
+} = require("./users");
 const { orderOneData } = require("./orders");
 
 const setupDatabase = async () => {
@@ -27,6 +30,12 @@ const setupDatabase = async () => {
   });
   createdUser.favoriteProducts.push(productOneId);
   await createdUser.save();
+
+  const createdAdminUser = await new User({
+    ...adminUserData,
+    password: await bcrypt.hash(adminUserPassword, 10),
+  });
+  await createdAdminUser.save();
 
   await Order.create(orderOneData);
 };

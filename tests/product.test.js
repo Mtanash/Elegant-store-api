@@ -11,7 +11,7 @@ const {
   productTwoData,
   productThreeData,
 } = require("./fixtures/products");
-const { userOneData, userOneId } = require("./fixtures/users");
+const { userOneData, userOneId, adminUserData } = require("./fixtures/users");
 
 describe("/products endpoint", () => {
   beforeEach(async () => {
@@ -82,24 +82,6 @@ describe("/products endpoint", () => {
     expect(response.body).toMatchObject(productOneData);
   });
 
-  it("should create new product correctly", async () => {
-    const productData = {
-      description: "description",
-      price: 50,
-      stock: 5,
-      imageUrl: "url",
-    };
-
-    const response = await request(app)
-      .post("/products")
-      .send(productData)
-      .expect(201);
-
-    const createdProduct = await Product.findById(response.body._id);
-
-    expect(createdProduct).toMatchObject(productData);
-  });
-
   it("should delete product correctly", async () => {
     const response = await request(app)
       .delete(`/products/${productOneId}`)
@@ -121,6 +103,36 @@ describe("/products endpoint", () => {
         .expect(200);
 
       accessToken = accessTokenResponse.body.accessToken;
+    });
+
+    it("should create new product correctly", async () => {
+      // generate accessToken for admin user
+      const adminAccessTokenResponse = await request(app)
+        .get("/users/refresh")
+        .set("Cookie", `jwt=${adminUserData.refreshToken}`)
+        .send()
+        .expect(200);
+      console.log(adminAccessTokenResponse.body);
+
+      const productData = {
+        description: "description",
+        price: 50,
+        stock: 5,
+        imageUrl: "url",
+      };
+
+      const response = await request(app)
+        .post("/products")
+        .set(
+          "Authorization",
+          `Bearer ${adminAccessTokenResponse.body.accessToken}`
+        )
+        .send(productData)
+        .expect(201);
+
+      const createdProduct = await Product.findById(response.body._id);
+
+      expect(createdProduct).toMatchObject(productData);
     });
 
     it("should add review on a product correctly", async () => {
