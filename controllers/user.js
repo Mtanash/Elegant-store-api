@@ -12,6 +12,20 @@ const cleanUserObj = (user) => {
   return userObj;
 };
 
+const getUserById = async (req, res) => {
+  const userId = req.params.id;
+  const cookies = req.cookies;
+  if (!cookies?.jwt) return res.sendStatus(401);
+  const refreshToken = cookies.jwt;
+  try {
+    const user = await User.findOne({ _id: userId, refreshToken });
+    if (!user) return res.sendStatus(401);
+    res.json(user);
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
+  }
+};
+
 const createUser = async (req, res) => {
   const emailExist = await User.findOne({ email: req.body.email });
   if (emailExist) return res.status(400).json({ message: "Invalid email." });
@@ -31,8 +45,8 @@ const createUser = async (req, res) => {
     const userObj = cleanUserObj(newUser);
 
     res.status(201).json({ user: userObj, accessToken });
-  } catch (e) {
-    return res.status(500).json({ message: e.message });
+  } catch (err) {
+    return res.status(500).json({ message: err.message });
   }
 };
 
@@ -117,14 +131,21 @@ const googleAuth = async (req, res) => {
 const logoutUser = async (req, res) => {
   const cookies = req.cookies;
   if (!cookies?.jwt) return res.sendStatus(204);
-  try {
-    req.user.refreshToken = "";
-    await req.user.save();
-    res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: true });
-    res.send();
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  const refreshToken = cookies.jwt;
+
+  // Is refreshToken in db?
+  const foundUser = await User.findOne({ refreshToken }).exec();
+  if (!foundUser) {
+    res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+    return res.sendStatus(204);
   }
+
+  // Delete refreshToken in db
+  foundUser.refreshToken = "";
+  await foundUser.save();
+
+  res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
+  res.sendStatus(200);
 };
 
 const deleteUser = async (req, res) => {
@@ -212,4 +233,5 @@ module.exports = {
   getFavoriteProducts,
   getUserOrders,
   googleAuth,
+  getUserById,
 };
