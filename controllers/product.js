@@ -47,7 +47,7 @@ const getAllProducts = async (req, res) => {
   result.skip(skip).limit(limit);
 
   try {
-    const products = await result;
+    const products = await result.populate({ path: "rates", select: "value" });
     res.json({
       products,
       totalPages,
@@ -64,7 +64,10 @@ const getProductById = async (req, res) => {
     return res.status(400).json({ message: "Please provide a valid id!" });
 
   try {
-    const product = await Product.findById(_id);
+    const product = await Product.findById(_id).populate({
+      path: "rates",
+      select: "value",
+    });
     if (!product) return res.status(404).json({ message: "No product found!" });
 
     res.json(product);
