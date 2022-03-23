@@ -19,7 +19,8 @@ module.exports = [
   {
     _id: new mongoose.Types.ObjectId(),
     description: "Firewood Jogger Trousers",
-    price: 159,
+    price: 200,
+    priceAfterDiscount: 159,
     imageUrl: "https://m.media-amazon.com/images/I/312bTJbQz-L._AC_.jpg",
     featured: true,
     stock: 7,
@@ -28,6 +29,7 @@ module.exports = [
     _id: new mongoose.Types.ObjectId(),
     description: "Pinky High Rise wide Leg Linen Pants For Women",
     price: 450,
+    priceAfterDiscount: 400,
     imageUrl: "https://m.media-amazon.com/images/I/61G2nnaR5sL._AC_SX522_.jpg",
     stock: 1,
   },
@@ -36,6 +38,7 @@ module.exports = [
     description:
       "Off Cliff Mens Cotton Contrast Side Stripe Drawstring Slim Fit Pant",
     price: 125,
+    priceAfterDiscount: 120,
     imageUrl: "https://m.media-amazon.com/images/I/71+abNBuoES._AC_SX679_.jpg",
     stock: 60,
   },
@@ -81,6 +84,7 @@ module.exports = [
     description:
       "Leathario Men's Shoulder Bag Leather Men's Bag Small Messenger Bag for Men Side Satchel Crossbody Retro Briefcase Daily Work",
     price: 159,
+    priceAfterDiscount: 99,
     imageUrl: "https://m.media-amazon.com/images/I/71fEoNi6TNL._AC_SX679_.jpg",
     featured: true,
     stock: 15,
@@ -90,6 +94,7 @@ module.exports = [
     description:
       "Leathario Men's Shoulder Bag Leather Men's Bag Small Messenger Bag for Men Side Satchel Crossbody Retro Briefcase Daily Work",
     price: 159,
+    priceAfterDiscount: 159,
     imageUrl: "https://m.media-amazon.com/images/I/71fEoNi6TNL._AC_SX679_.jpg",
     stock: 7,
   },
@@ -105,6 +110,7 @@ module.exports = [
     _id: new mongoose.Types.ObjectId(),
     description: "Tommy Hilfiger Men's Blue Dial Rubber Band Watch - 1791476",
     price: 1690,
+    priceAfterDiscount: 1599,
     imageUrl: "https://m.media-amazon.com/images/I/81RLOEiItwL._AC_SY445_.jpg",
     stock: 29,
   },
