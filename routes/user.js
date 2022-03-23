@@ -11,12 +11,17 @@ const {
   getFavoriteProducts,
   getUserOrders,
   googleAuth,
+  getUserById,
 } = require("../controllers/user");
 const getRefreshToken = require("../controllers/refreshToken");
 
 const userRouter = express.Router();
 
 userRouter.get("/refresh", getRefreshToken);
+
+userRouter.get("/logout", logoutUser);
+
+userRouter.get("/:id", getUserById);
 
 userRouter.get("/me/favoriteProducts", authMiddleware, getFavoriteProducts);
 
@@ -25,8 +30,6 @@ userRouter.get("/me/orders", authMiddleware, getUserOrders);
 userRouter.post("/", createUser);
 
 userRouter.post("/login", loginUser);
-
-userRouter.post("/logout", authMiddleware, logoutUser);
 
 userRouter.post("/googleAuth", googleAuth);
 
