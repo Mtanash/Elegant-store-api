@@ -8,11 +8,21 @@ const orderRouter = require("./routes/order");
 const dashboardRouter = require("./routes/dashboard");
 const corsOption = require("./config/corsOption");
 const connectDB = require("./db/connect");
+const rateLimit = require("express-rate-limit");
 
 const app = express();
 app.use(cookieParser());
 app.use(bodyParser.json({ limit: "10mb", extended: true }));
 app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100,
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter);
 
 app.use(cors(corsOption));
 
