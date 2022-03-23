@@ -10,6 +10,9 @@ const productSchema = new mongoose.Schema(
       type: Number,
       required: [true, "Please provide product price"],
     },
+    priceAfterDiscount: {
+      type: Number,
+    },
     featured: {
       type: Boolean,
       default: false,
@@ -23,8 +26,14 @@ const productSchema = new mongoose.Schema(
       required: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true, toJSON: { virtuals: true } }
 );
+
+productSchema.virtual("rates", {
+  ref: "rate",
+  localField: "_id",
+  foreignField: "product",
+});
 
 const Product = mongoose.model("product", productSchema);
 
