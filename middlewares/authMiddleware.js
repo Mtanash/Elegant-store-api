@@ -15,8 +15,8 @@ const authMiddleware = async (req, res, next) => {
     async (err, decoded) => {
       if (err) {
         if (err?.message === "jwt expired")
-          return res.status(401).json({ message: "Please authenticate" });
-        else return res.status(403).json({ message: "Invalid token" });
+          return res.status(403).json({ message: "Please authenticate" });
+        else return res.status(401).json({ message: "Invalid token" });
       }
 
       const user = await User.findOne({
