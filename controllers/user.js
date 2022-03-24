@@ -20,7 +20,8 @@ const getUserById = async (req, res) => {
   try {
     const user = await User.findOne({ _id: userId, refreshToken });
     if (!user) return res.sendStatus(401);
-    res.json(user);
+    const userObj = cleanUserObj(newUser);
+    res.json(userObj);
   } catch (err) {
     return res.status(500).json({ message: err.message });
   }
