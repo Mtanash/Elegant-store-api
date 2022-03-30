@@ -7,7 +7,12 @@ const Rate = require("./models/Rate");
 const Review = require("./models/Review");
 const connectDB = require("./db/connect");
 
-const productsData = require("./data/products.js");
+const womenProducts = require("./data/women_clothes_products.js");
+const menProducts = require("./data/men_clothes_products");
+const bagsProducts = require("./data/bags_products");
+const perfumesProducts = require("./data/perfumes_products");
+const shoesProducts = require("./data/shoes_products");
+const watchesProducts = require("./data/watches_products");
 const usersData = require("./data/users.js");
 const ordersData = require("./data/orders.js");
 const ratesData = require("./data/rates.js");
@@ -31,8 +36,16 @@ const start = async () => {
     console.log("Deleted old reviews data".blue);
 
     // create new data
-    await Product.create(productsData);
+
+    // Products data
+    await Product.create(womenProducts);
+    await Product.create(menProducts);
+    await Product.create(shoesProducts);
+    await Product.create(perfumesProducts);
+    await Product.create(watchesProducts);
+    await Product.create(bagsProducts);
     console.log("Added new products data".blue);
+
     await User.create(usersData);
     console.log("Added new users data".blue);
     await Order.create(ordersData);
