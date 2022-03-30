@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const { categories } = require("../constants");
 
 const productSchema = new mongoose.Schema(
   {
@@ -24,6 +25,10 @@ const productSchema = new mongoose.Schema(
       type: Number,
       min: 0,
       required: true,
+    },
+    category: {
+      type: String,
+      enum: categories,
     },
   },
   { timestamps: true, toJSON: { virtuals: true } }
