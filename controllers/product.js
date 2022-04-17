@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const generateUploadUrl = require("../s3");
 
 const getAllProducts = async (req, res) => {
-  const { featured, search, sort, fields } = req.query;
+  const { featured, search, sort, fields, category } = req.query;
   let queryObject = {};
 
   // query
@@ -13,12 +13,18 @@ const getAllProducts = async (req, res) => {
     queryObject.featured = featured === "true" ? true : false;
   }
 
+  // search
   if (search) {
     const searchQ = new RegExp(
       `\W*(${search?.trim()?.toLowerCase()})\W*`,
       "ig"
     );
     queryObject.description = { $regex: searchQ };
+  }
+
+  // category
+  if (category) {
+    queryObject.category = category;
   }
 
   let result = Product.find(queryObject);
