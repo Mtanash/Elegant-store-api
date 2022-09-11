@@ -146,7 +146,7 @@ const logoutUser = async (req, res) => {
   await foundUser.save();
 
   res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
-  res.sendStatus(200);
+  res.status(200).json({ message: "Success" });
 };
 
 const deleteUser = async (req, res) => {

@@ -1,5 +1,6 @@
 const whitelist = [
   "http://localhost:3000",
+  "http://localhost:3001",
   "https://elegant.mohamedtanash.com",
 ];
 const corsOption = {
