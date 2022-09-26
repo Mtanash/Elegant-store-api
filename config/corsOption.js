@@ -2,7 +2,9 @@ const whitelist = [
   "http://localhost:3000",
   "http://localhost:3001",
   "https://elegant.mohamedtanash.com",
+  "https://elegant-store.vercel.app",
 ];
+
 const corsOption = {
   origin: (origin, callback) => {
     if (whitelist.indexOf(origin) !== -1 || !origin) {
