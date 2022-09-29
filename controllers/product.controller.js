@@ -1,10 +1,10 @@
-const Product = require("../models/Product");
-const Rate = require("../models/Rate");
-const Review = require("../models/Review");
+const Product = require("../models/product.model");
+const Rate = require("../models/rate.model");
+const Review = require("../models/review.model");
 const mongoose = require("mongoose");
-const generateUploadUrl = require("../s3");
+const { s3 } = require("../s3");
 
-const getAllProducts = async (req, res) => {
+const getAllProducts = async (req, res, next) => {
   const { featured, search, sort, fields, category } = req.query;
   let queryObject = {};
 
@@ -59,12 +59,12 @@ const getAllProducts = async (req, res) => {
       totalPages,
       itemsCount: products.length,
     });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const getProductById = async (req, res) => {
+const getProductById = async (req, res, next) => {
   const { id: _id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(_id))
     return res.status(400).json({ message: "Please provide a valid id!" });
@@ -77,22 +77,44 @@ const getProductById = async (req, res) => {
     if (!product) return res.status(404).json({ message: "No product found!" });
 
     res.json(product);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const createProduct = async (req, res) => {
+const createProduct = async (req, res, next) => {
   try {
-    const newProductData = req.body;
-    const createdProduct = await Product.create(newProductData);
-    res.status(201).json(createdProduct);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    const productImageFile = req.file;
+    const productData = {
+      ...req.body,
+      price: parseInt(req.body.price),
+      stock: parseInt(req.body.stock),
+    };
+
+    if (!productImageFile)
+      res.status(404).json({ message: "Product image not found!" });
+
+    const createdProduct = await Product.create(productData);
+    const uploadedImage = await s3
+      .upload({
+        Bucket: process.env.PRODUCTS_IMAGES_BUCKET_NAME,
+        Key: createdProduct._id.toString(),
+        Body: productImageFile.buffer,
+      })
+      .promise();
+
+    createdProduct.imageUrl = uploadedImage.Location;
+
+    await createdProduct.save();
+    res
+      .status(201)
+      .json({ message: "Product created successfully", data: createdProduct });
+  } catch (error) {
+    next(error);
   }
 };
 
-const deleteProduct = async (req, res) => {
+const deleteProduct = async (req, res, next) => {
   const productId = req.params.id;
 
   if (!mongoose.Types.ObjectId.isValid(productId))
@@ -105,34 +127,12 @@ const deleteProduct = async (req, res) => {
       return res.status(404).json({ message: "Product does not exist!" });
 
     res.json(deletedProduct);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const getImageUploadUrl = async (req, res) => {
-  const imageName = req.params.productId;
-  try {
-    const url = await generateUploadUrl(imageName);
-    res.json({ url });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-const addProductImage = async (req, res) => {
-  const { productId, imageUrl } = req.body;
-  try {
-    const product = await Product.findById(productId);
-    product.imageUrl = imageUrl;
-    await product.save();
-    res.sendStatus(200);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-const addReview = async (req, res) => {
+const addReview = async (req, res, next) => {
   const { text, rate, productId } = req.body;
   const user = req.user;
 
@@ -150,12 +150,12 @@ const addReview = async (req, res) => {
     });
 
     res.sendStatus(201);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const getProductReviews = async (req, res) => {
+const getProductReviews = async (req, res, next) => {
   const productId = req.params.id;
 
   try {
@@ -163,12 +163,12 @@ const getProductReviews = async (req, res) => {
       .populate({ path: "rate", select: "value owner" })
       .populate({ path: "owner", select: "name avatar" });
     res.json(productReviews);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const getProductRates = async (req, res) => {
+const getProductRates = async (req, res, next) => {
   const productId = req.params.id;
 
   try {
@@ -181,12 +181,12 @@ const getProductRates = async (req, res) => {
       totalRatesValue += i.value;
     }
     res.json({ productRates, totalRates, totalRatesValue });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const checkUserReviewedProduct = async (req, res) => {
+const checkUserReviewedProduct = async (req, res, next) => {
   const user = req.user;
   const productId = req.params.id;
   try {
@@ -199,8 +199,8 @@ const checkUserReviewedProduct = async (req, res) => {
       .populate({ path: "rate", select: "value owner" })
       .populate({ path: "owner", select: "name avatar" });
     res.json(review);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
@@ -209,8 +209,6 @@ module.exports = {
   createProduct,
   deleteProduct,
   getProductById,
-  getImageUploadUrl,
-  addProductImage,
   addReview,
   getProductReviews,
   getProductRates,

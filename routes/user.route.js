@@ -1,5 +1,5 @@
 const express = require("express");
-const authMiddleware = require("../middlewares/authMiddleware");
+const authMiddleware = require("../middleware/auth.middleware");
 const {
   createUser,
   loginUser,
@@ -12,7 +12,7 @@ const {
   getUserOrders,
   googleAuth,
   getUserById,
-} = require("../controllers/user");
+} = require("../controllers/user.controller");
 const getRefreshToken = require("../controllers/refreshToken");
 
 const userRouter = express.Router();

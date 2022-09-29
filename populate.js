@@ -1,10 +1,10 @@
 require("dotenv").config();
 var colors = require("colors");
-const Product = require("./models/Product");
-const User = require("./models/User");
-const Order = require("./models/Order");
-const Rate = require("./models/Rate");
-const Review = require("./models/Review");
+const Product = require("./models/product.model");
+const User = require("./models/user.model");
+const Order = require("./models/order.model");
+const Rate = require("./models/rate.model");
+const Review = require("./models/review.model");
 const connectDB = require("./db/connect");
 
 const womenProducts = require("./data/women_clothes_products.js");

@@ -1,19 +1,19 @@
 const express = require("express");
-const authMiddleware = require("../middlewares/authMiddleware");
-const adminMiddleware = require("../middlewares/adminMiddleware");
+const authMiddleware = require("../middleware/auth.middleware");
+const adminMiddleware = require("../middleware/admin.middleware");
+const multer = require("multer");
+const upload = multer();
 
 const {
   getAllProducts,
   createProduct,
   deleteProduct,
   getProductById,
-  getImageUploadUrl,
-  addProductImage,
   addReview,
   getProductReviews,
   getProductRates,
   checkUserReviewedProduct,
-} = require("../controllers/product");
+} = require("../controllers/product.controller");
 
 const productsRouter = express.Router();
 
@@ -29,18 +29,15 @@ productsRouter.get("/reviews/:id", getProductReviews);
 
 productsRouter.get("/rates/:id", getProductRates);
 
-productsRouter.get(
-  "/imageUploadUrl/:productId",
-  authMiddleware,
-  adminMiddleware,
-  getImageUploadUrl
-);
-
 productsRouter.get("/:id", getProductById);
 
-productsRouter.post("/", authMiddleware, adminMiddleware, createProduct);
-
-productsRouter.post("/image", authMiddleware, adminMiddleware, addProductImage);
+productsRouter.post(
+  "/",
+  authMiddleware,
+  adminMiddleware,
+  upload.single("productImage"),
+  createProduct
+);
 
 productsRouter.post("/reviews", authMiddleware, addReview);
 

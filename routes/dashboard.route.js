@@ -1,5 +1,5 @@
 const express = require("express");
-const { getDashboardData } = require("../controllers/dashboard");
+const { getDashboardData } = require("../controllers/dashboard.controller");
 
 const dashboardRouter = express.Router();
 

@@ -1,8 +1,8 @@
 const bcrypt = require("bcrypt");
-const User = require("../models/User");
+const User = require("../models/user.model");
 const mongoose = require("mongoose");
-const Order = require("../models/Order");
-const Product = require("../models/Product");
+const Order = require("../models/order.model");
+const Product = require("../models/product.model");
 
 const cleanUserObj = (user) => {
   const userObj = user.toObject();
@@ -12,7 +12,7 @@ const cleanUserObj = (user) => {
   return userObj;
 };
 
-const getUserById = async (req, res) => {
+const getUserById = async (req, res, next) => {
   const userId = req.params.id;
   const cookies = req.cookies;
   if (!cookies?.jwt) return res.sendStatus(401);
@@ -22,12 +22,12 @@ const getUserById = async (req, res) => {
     if (!user) return res.sendStatus(401);
     const userObj = cleanUserObj(user);
     res.json(userObj);
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const createUser = async (req, res) => {
+const createUser = async (req, res, next) => {
   const emailExist = await User.findOne({ email: req.body.email });
   if (emailExist) return res.status(400).json({ message: "Invalid email." });
   try {
@@ -46,21 +46,21 @@ const createUser = async (req, res) => {
     const userObj = cleanUserObj(newUser);
 
     res.status(201).json({ user: userObj, accessToken });
-  } catch (err) {
-    return res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const getFavoriteProducts = async (req, res) => {
+const getFavoriteProducts = async (req, res, next) => {
   try {
     await req.user.populate("favoriteProducts");
     res.json(req.user.favoriteProducts);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const getUserOrders = async (req, res) => {
+const getUserOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({ orderOwner: req.user._id })
       .populate({
@@ -69,12 +69,12 @@ const getUserOrders = async (req, res) => {
       })
       .sort("-createdAt");
     res.json(orders);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const loginUser = async (req, res) => {
+const loginUser = async (req, res, next) => {
   try {
     const user = await User.findOne({ email: req.body.email });
 
@@ -98,12 +98,12 @@ const loginUser = async (req, res) => {
     const userObj = cleanUserObj(user);
 
     res.json({ user: userObj, accessToken });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const googleAuth = async (req, res) => {
+const googleAuth = async (req, res, next) => {
   const { name, email, password, imageUrl } = req.body;
 
   try {
@@ -124,32 +124,40 @@ const googleAuth = async (req, res) => {
     });
     const userObj = cleanUserObj(user);
     res.json({ user: userObj, accessToken });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const logoutUser = async (req, res) => {
+const logoutUser = async (req, res, next) => {
   const cookies = req.cookies;
   if (!cookies?.jwt) return res.sendStatus(204);
   const refreshToken = cookies.jwt;
 
-  // Is refreshToken in db?
-  const foundUser = await User.findOne({ refreshToken }).exec();
-  if (!foundUser) {
+  try {
+    // Is refreshToken in db?
+    const foundUser = await User.findOne({ refreshToken }).exec();
+    if (!foundUser) {
+      res.clearCookie("jwt", {
+        httpOnly: true,
+        sameSite: "None",
+        secure: true,
+      });
+      return res.sendStatus(204);
+    }
+
+    // Delete refreshToken in db
+    foundUser.refreshToken = "";
+    await foundUser.save();
+
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
-    return res.sendStatus(204);
+    res.status(200).json({ message: "Success" });
+  } catch (error) {
+    next(error);
   }
-
-  // Delete refreshToken in db
-  foundUser.refreshToken = "";
-  await foundUser.save();
-
-  res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
-  res.status(200).json({ message: "Success" });
 };
 
-const deleteUser = async (req, res) => {
+const deleteUser = async (req, res, next) => {
   try {
     const deletedUser = await User.findByIdAndDelete(req.user._id);
     if (!deletedUser) return res.status(404).json({ message: "No user found" });
@@ -158,12 +166,12 @@ const deleteUser = async (req, res) => {
     await Order.deleteMany({ orderOwner: req.user._id });
 
     res.send();
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const addToFavorite = async (req, res) => {
+const addToFavorite = async (req, res, next) => {
   const { _id } = req.body;
   if (!mongoose.Types.ObjectId.isValid(_id))
     return res.status(404).json({ message: "Invalid id" });
@@ -181,12 +189,12 @@ const addToFavorite = async (req, res) => {
     req.user.favoriteProducts.push(req.body);
     await req.user.save();
     res.send();
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const removeFromFavorite = async (req, res) => {
+const removeFromFavorite = async (req, res, next) => {
   const { _id } = req.body;
   if (!mongoose.Types.ObjectId.isValid(_id))
     return res.status(404).json({ message: "Invalid id" });
@@ -208,18 +216,18 @@ const removeFromFavorite = async (req, res) => {
     );
     await req.user.save();
     res.send();
-  } catch (e) {
-    res.status(500).json({ message: e.message });
+  } catch (error) {
+    next(error);
   }
 };
 
-const addAvatar = async (req, res) => {
+const addAvatar = async (req, res, next) => {
   req.user.avatar = req.body.avatar;
   try {
     await req.user.save();
     res.send();
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+  } catch (error) {
+    next(error);
   }
 };
 

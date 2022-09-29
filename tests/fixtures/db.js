@@ -1,7 +1,7 @@
 const bcrypt = require("bcrypt");
-const User = require("../../models/User");
-const Product = require("../../models/Product");
-const Order = require("../../models/Order");
+const User = require("../../models/user.model");
+const Product = require("../../models/product.model");
+const Order = require("../../models/order.model");
 
 const {
   productOneData,
