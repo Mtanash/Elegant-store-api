@@ -3,7 +3,6 @@ const authMiddleware = require("../middleware/auth.middleware");
 const adminMiddleware = require("../middleware/admin.middleware");
 const multer = require("multer");
 const upload = multer();
-
 const {
   getAllProducts,
   createProduct,
@@ -13,6 +12,7 @@ const {
   getProductReviews,
   getProductRates,
   checkUserReviewedProduct,
+  updateProduct,
 } = require("../controllers/product.controller");
 
 const productsRouter = express.Router();
@@ -41,6 +41,8 @@ productsRouter.post(
 
 productsRouter.post("/reviews", authMiddleware, addReview);
 
-productsRouter.delete("/:id", deleteProduct);
+productsRouter.delete("/:id", authMiddleware, adminMiddleware, deleteProduct);
+
+productsRouter.patch("/:id", authMiddleware, adminMiddleware, updateProduct);
 
 module.exports = productsRouter;

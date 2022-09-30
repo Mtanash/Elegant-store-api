@@ -118,7 +118,14 @@ const deleteProduct = async (req, res, next) => {
   const productId = req.params.id;
 
   if (!mongoose.Types.ObjectId.isValid(productId))
-    return res.status(400).json({ message: "Please provide a valid id!" });
+    return res.status(404).json({ message: "Please provide a valid id!" });
+
+  await s3
+    .deleteObject({
+      Bucket: process.env.PRODUCTS_IMAGES_BUCKET_NAME,
+      Key: productId.toString(),
+    })
+    .promise();
 
   try {
     const deletedProduct = await Product.findByIdAndDelete(productId);
@@ -204,6 +211,21 @@ const checkUserReviewedProduct = async (req, res, next) => {
   }
 };
 
+const updateProduct = async (req, res, next) => {
+  const productId = req.params.id;
+
+  if (!mongoose.Types.ObjectId.isValid(productId))
+    return res.status(404).json({ message: "Please provide a valid id!" });
+
+  try {
+    await Product.findByIdAndUpdate(productId, req.body);
+
+    res.status(200).json({ message: "Product updated successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getAllProducts,
   createProduct,
@@ -213,4 +235,5 @@ module.exports = {
   getProductReviews,
   getProductRates,
   checkUserReviewedProduct,
+  updateProduct,
 };
