@@ -2,12 +2,12 @@ const mongoose = require("mongoose");
 
 const orderSchema = new mongoose.Schema(
   {
-    orderOwner: {
+    owner: {
       type: mongoose.SchemaTypes.ObjectId,
       ref: "user",
       required: true,
     },
-    orderProducts: [
+    products: [
       {
         product: {
           type: mongoose.SchemaTypes.ObjectId,
@@ -20,13 +20,13 @@ const orderSchema = new mongoose.Schema(
         },
       },
     ],
-    orderTotalPrice: Number,
-    orderStatus: {
+    totalPrice: Number,
+    status: {
       type: String,
       enum: ["confirmed", "shipped", "delivered"],
       default: "confirmed",
     },
-    orderInfo: {
+    info: {
       firstName: String,
       lastName: String,
       address: String,

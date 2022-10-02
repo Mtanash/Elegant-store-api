@@ -3,8 +3,8 @@ const menProducts = require("./men_clothes_products");
 
 module.exports = [
   {
-    orderOwner: users[1]._id,
-    orderProducts: [
+    owner: users[1]._id,
+    products: [
       {
         product: menProducts[0]._id,
         quantity: 1,
@@ -12,9 +12,9 @@ module.exports = [
         quantity: 3,
       },
     ],
-    orderTotalPrice: menProducts[0].price * 1 + menProducts[3].price * 3,
-    orderStatus: "delivered",
-    orderInfo: {
+    totalPrice: menProducts[0].price * 1 + menProducts[3].price * 3,
+    status: "delivered",
+    info: {
       firstName: "Mohamed",
       lastName: "Tanash",
       address: "Damietta",
@@ -22,11 +22,11 @@ module.exports = [
     },
   },
   {
-    orderOwner: users[1]._id,
-    orderProducts: [{ product: menProducts[3]._id, quantity: 2 }],
-    orderTotalPrice: menProducts[3].price * 2,
-    orderStatus: "delivered",
-    orderInfo: {
+    owner: users[1]._id,
+    products: [{ product: menProducts[3]._id, quantity: 2 }],
+    totalPrice: menProducts[3].price * 2,
+    status: "delivered",
+    info: {
       firstName: "Mohamed",
       lastName: "Tanash",
       address: "Damietta",
@@ -34,14 +34,14 @@ module.exports = [
     },
   },
   {
-    orderOwner: users[1]._id,
-    orderProducts: [
+    owner: users[1]._id,
+    products: [
       { product: menProducts[3]._id, quantity: 1 },
       { product: menProducts[5]._id, quantity: 1 },
     ],
-    orderTotalPrice: menProducts[3].price + menProducts[5].price,
-    orderStatus: "shipped",
-    orderInfo: {
+    totalPrice: menProducts[3].price + menProducts[5].price,
+    status: "shipped",
+    info: {
       firstName: "Mohamed",
       lastName: "Tanash",
       address: "Damietta",
@@ -49,16 +49,16 @@ module.exports = [
     },
   },
   {
-    orderOwner: users[2]._id,
-    orderProducts: [
+    owner: users[2]._id,
+    products: [
       { product: menProducts[4]._id, quantity: 1 },
       { product: menProducts[0]._id, quantity: 1 },
       { product: menProducts[5]._id, quantity: 1 },
     ],
-    orderTotalPrice:
+    totalPrice:
       menProducts[4].price + menProducts[0].price + menProducts[5].price,
-    orderStatus: "shipped",
-    orderInfo: {
+    status: "shipped",
+    info: {
       firstName: "Ahmed",
       lastName: "Ali",
       address: "Cairo",
