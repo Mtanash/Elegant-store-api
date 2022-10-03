@@ -19,7 +19,7 @@ const userRouter = express.Router();
 
 userRouter.get("/refresh", getRefreshToken);
 
-userRouter.get("/logout", logoutUser);
+userRouter.get("/logout", authMiddleware, logoutUser);
 
 userRouter.get("/:id", getUserById);
 

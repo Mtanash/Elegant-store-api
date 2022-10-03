@@ -13,9 +13,18 @@ const {
 } = require("./fixtures/products");
 const { userOneData, userOneId, adminUserData } = require("./fixtures/users");
 
+let accessToken;
 describe("/products endpoint", () => {
   beforeEach(async () => {
     await setupDatabase();
+
+    const accessTokenResponse = await request(app)
+      .get("/users/refresh")
+      .set("Cookie", `jwt=${userOneData.refreshToken}`)
+      .send()
+      .expect(200);
+
+    accessToken = accessTokenResponse.body.accessToken;
   }, 10000);
 
   it("should fetch all products correctly", async () => {
@@ -82,9 +91,20 @@ describe("/products endpoint", () => {
     expect(response.body).toMatchObject(productOneData);
   });
 
+  // admin user
   it("should delete product correctly", async () => {
-    const response = await request(app)
+    const adminAccessTokenResponse = await request(app)
+      .get("/users/refresh")
+      .set("Cookie", `jwt=${adminUserData.refreshToken}`)
+      .send()
+      .expect(200);
+
+    await request(app)
       .delete(`/products/${productOneId}`)
+      .set(
+        "Authorization",
+        `Bearer ${adminAccessTokenResponse.body.accessToken}`
+      )
       .send()
       .expect(200);
 
@@ -94,16 +114,16 @@ describe("/products endpoint", () => {
   });
 
   describe("/users endpoint with accessToken", () => {
-    let accessToken;
-    beforeEach(async () => {
-      const accessTokenResponse = await request(app)
-        .get("/users/refresh")
-        .set("Cookie", `jwt=${userOneData.refreshToken}`)
-        .send()
-        .expect(200);
+    // let accessToken;
+    // beforeEach(async () => {
+    //   const accessTokenResponse = await request(app)
+    //     .get("/users/refresh")
+    //     .set("Cookie", `jwt=${userOneData.refreshToken}`)
+    //     .send()
+    //     .expect(200);
 
-      accessToken = accessTokenResponse.body.accessToken;
-    });
+    //   accessToken = accessTokenResponse.body.accessToken;
+    // });
 
     it("should create new product correctly", async () => {
       // generate accessToken for admin user
@@ -116,9 +136,9 @@ describe("/products endpoint", () => {
 
       const productData = {
         description: "description",
-        price: 50,
-        stock: 5,
-        imageUrl: "url",
+        price: "50",
+        stock: "5",
+        type: "Men Clothes",
       };
 
       const response = await request(app)
@@ -127,6 +147,7 @@ describe("/products endpoint", () => {
           "Authorization",
           `Bearer ${adminAccessTokenResponse.body.accessToken}`
         )
+        .set("Content-Type", "multipart/form-data")
         .send(productData)
         .expect(201);
 
@@ -141,7 +162,7 @@ describe("/products endpoint", () => {
         rate: 4,
         productId: productOneId,
       };
-      const response = await request(app)
+      await request(app)
         .post("/products/reviews")
         .set("Authorization", `Bearer ${accessToken}`)
         .send(reviewData)

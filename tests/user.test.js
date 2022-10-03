@@ -148,17 +148,17 @@ describe("/users endpoint", () => {
       expect(response.body[0]).toMatchObject(orderOneData);
     });
 
-    it("should logout user successfully", async () => {
-      await request(app)
-        .post("/users/logout")
-        .set("Authorization", `Bearer ${accessToken}`)
-        .set("Cookie", `jwt=${userOneData.refreshToken}`)
-        .send()
-        .expect(200);
+    // it("should logout user successfully", async () => {
+    //   await request(app)
+    //     .post("/users/logout")
+    //     .set("Authorization", `Bearer ${accessToken}`)
+    //     // .set("Cookie", `jwt=${userOneData.refreshToken}`)
+    //     .send()
+    //     .expect(200);
 
-      const user = await User.findById(userOneId);
-      expect(user.refreshToken).toBe("");
-    });
+    //   const user = await User.findById(userOneId);
+    //   expect(user.refreshToken).toBe("");
+    // });
 
     it("should delete user", async () => {
       await request(app)

@@ -64,7 +64,7 @@ const getUserOrders = async (req, res, next) => {
   try {
     const orders = await Order.find({ orderOwner: req.user._id })
       .populate({
-        path: "orderProducts",
+        path: "products",
         select: "_id description price",
       })
       .sort("-createdAt");
@@ -130,25 +130,26 @@ const googleAuth = async (req, res, next) => {
 };
 
 const logoutUser = async (req, res, next) => {
-  const cookies = req.cookies;
-  if (!cookies?.jwt) return res.sendStatus(204);
-  const refreshToken = cookies.jwt;
+  // const cookies = req.cookies;
+  // if (!cookies?.jwt) return res.sendStatus(204);
+  // const refreshToken = cookies.jwt;
 
   try {
-    // Is refreshToken in db?
-    const foundUser = await User.findOne({ refreshToken }).exec();
-    if (!foundUser) {
-      res.clearCookie("jwt", {
-        httpOnly: true,
-        sameSite: "None",
-        secure: true,
-      });
-      return res.sendStatus(204);
-    }
+    // // Is refreshToken in db?
+    // const foundUser = await User.findOne({ refreshToken }).exec();
+    // if (!foundUser) {
+    //   res.clearCookie("jwt", {
+    //     httpOnly: true,
+    //     sameSite: "None",
+    //     secure: true,
+    //   });
+    //   return res.sendStatus(204);
+    // }
 
     // Delete refreshToken in db
-    foundUser.refreshToken = "";
-    await foundUser.save();
+    const user = req.user;
+    user.refreshToken = "";
+    await user.save();
 
     res.clearCookie("jwt", { httpOnly: true, sameSite: "None", secure: true });
     res.status(200).json({ message: "Success" });

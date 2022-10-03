@@ -6,11 +6,11 @@ const { productOneId, productOneData } = require("./products");
 const orderOneId = new mongoose.Types.ObjectId();
 const orderOneData = {
   _id: orderOneId,
-  orderOwner: userOneId,
-  orderProducts: [{ product: productOneId, quantity: 1 }],
-  orderTotalPrice: productOneData.price,
-  orderStatus: "confirmed",
-  orderInfo: {
+  owner: userOneId,
+  products: [{ product: productOneId, quantity: 1 }],
+  totalPrice: productOneData.price,
+  status: "confirmed",
+  info: {
     firstName: "firstName",
     lastName: "lastName",
     address: "address",
