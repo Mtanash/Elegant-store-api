@@ -14,6 +14,8 @@ const {
   getUserById,
 } = require("../controllers/user.controller");
 const getRefreshToken = require("../controllers/refreshToken");
+const multer = require("multer");
+const upload = multer();
 
 const userRouter = express.Router();
 
@@ -37,7 +39,12 @@ userRouter.post("/addToFavorite", authMiddleware, addToFavorite);
 
 userRouter.post("/removeFromFavorite", authMiddleware, removeFromFavorite);
 
-userRouter.post("/me/avatar", authMiddleware, addAvatar);
+userRouter.post(
+  "/me/avatar",
+  authMiddleware,
+  upload.single("avatar"),
+  addAvatar
+);
 
 userRouter.delete("/", authMiddleware, deleteUser);
 

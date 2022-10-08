@@ -3,6 +3,7 @@ const User = require("../models/user.model");
 const mongoose = require("mongoose");
 const Order = require("../models/order.model");
 const Product = require("../models/product.model");
+const { s3 } = require("../s3");
 
 const cleanUserObj = (user) => {
   const userObj = user.toObject();
@@ -223,10 +224,22 @@ const removeFromFavorite = async (req, res, next) => {
 };
 
 const addAvatar = async (req, res, next) => {
-  req.user.avatar = req.body.avatar;
   try {
-    await req.user.save();
-    res.send();
+    const avatar = req.file;
+    const user = req.user;
+
+    const uploadedAvatar = await s3
+      .upload({
+        Bucket: process.env.USERS_IMAGES_BUCKET_NAME,
+        Key: user._id.toString(),
+        Body: avatar.buffer,
+      })
+      .promise();
+
+    user.avatar = uploadedAvatar.Location;
+    await user.save();
+
+    res.status(200).json({ message: "Avatar added successfully" });
   } catch (error) {
     next(error);
   }
