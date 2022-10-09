@@ -63,7 +63,7 @@ const getFavoriteProducts = async (req, res, next) => {
 
 const getUserOrders = async (req, res, next) => {
   try {
-    const orders = await Order.find({ orderOwner: req.user._id })
+    const orders = await Order.find({ owner: req.user._id })
       .populate({
         path: "products",
         select: "_id description price",
@@ -239,7 +239,10 @@ const addAvatar = async (req, res, next) => {
     user.avatar = uploadedAvatar.Location;
     await user.save();
 
-    res.status(200).json({ message: "Avatar added successfully" });
+    res.status(200).json({
+      message: "Avatar added successfully",
+      data: uploadedAvatar.Location,
+    });
   } catch (error) {
     next(error);
   }
